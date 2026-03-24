@@ -3,7 +3,9 @@ import pino from 'pino-http';
 import cors from 'cors';
 import { env } from './utils/env.js';
 import dotenv from 'dotenv';
-import contactsRouter from './routes/contacts.js';
+import contactsRouter from './routers/contacts.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 dotenv.config();
 
@@ -21,11 +23,14 @@ export const setupServer = () => {
       },
     }),
   );
+  //ROUTES
   app.use('/contacts', contactsRouter);
-  app.get('/{*splat}', (req, res, next) => {
-    res.status(404).json({
-      message: 'Not found',
-    });
-  });
+
+  //404 HANDLER
+  app.use(notFoundHandler);
+
+  //ERROR HANDLER (ALWAYS AT THE END)
+  app.use(errorHandler);
+
   return app;
 };
