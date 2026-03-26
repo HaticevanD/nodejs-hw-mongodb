@@ -20,6 +20,10 @@ export const setupServer = () => {
       },
     }),
   );
+
+  app.get('/', (req, res) => {
+    res.send('Contacts API is running');
+  });
   //ROUTES
   app.use('/contacts', contactsRouter);
 
