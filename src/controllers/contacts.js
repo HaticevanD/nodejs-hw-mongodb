@@ -35,8 +35,11 @@ export const getContactById = async (req, res) => {
 export const createNewContact = async (req, res) => {
   const { name, email, phoneNumber, isFavourite, contactType } = req.body;
 
-  if (!name || !phoneNumber) {
-    throw createHttpError(400, 'Missing required fields');
+  if (!name || !phoneNumber || !contactType) {
+    throw createHttpError(
+      400,
+      'name, phoneNumber and contactType are required',
+    );
   }
 
   const newContact = await createContact({
@@ -83,9 +86,5 @@ export const deleteContactById = async (req, res) => {
     throw createHttpError(404, 'Contact not found');
   }
 
-  res.status(200).json({
-    status: 200,
-    message: 'Successfully deleted a contact!',
-    data: deleted,
-  });
+  return res.status(204).send();
 };
