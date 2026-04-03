@@ -13,8 +13,13 @@ import {
   createContactSchema,
   updateContactSchema,
 } from '../validation/contacts.js';
+import { authenticate } from '../middlewares/authenticate.js';
 
 const router = Router();
+
+//Protect all contacts routes
+// From this point on, every request MUST have a valid Bearer Token
+router.use(authenticate);
 
 router.get('/', ctrlWrapper(getContacts));
 router.get('/:contactId', isValidId, ctrlWrapper(getContactById));

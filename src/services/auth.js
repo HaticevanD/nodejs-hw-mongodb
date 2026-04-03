@@ -1,57 +1,73 @@
 import bcrypt from 'bcrypt';
-import crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import createHttpError from 'http-errors';
 import { UsersCollection } from '../db/user.js';
 import { SessionsCollection } from '../db/session.js';
+import { FIFTEEN_MINUTES, ONE_DAY } from '../index.js';
+
+// --- HELPER FUNCTION ---
+const createSessionData = () => {
+  return {
+    accessToken: randomBytes(30).toString('base64'),
+    refreshToken: randomBytes(30).toString('base64'),
+    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
+    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
+  };
+};
+
+// --- SERVICES ---
 
 export const registerUser = async (payload) => {
-  // 1. No same email registered!)
   const user = await UsersCollection.findOne({ email: payload.email });
-  if (user) {
-    throw createHttpError(409, 'Email in use'); // Conflict
-  }
+  if (user) throw createHttpError(409, 'Email in use');
 
-  // 2. Unrecognizable pwd
-  // 10 standard for crypting
   const hashedPassword = await bcrypt.hash(payload.password, 10);
 
-  // 3. Add new user to db with the user input(payload)
   return await UsersCollection.create({
     ...payload,
     password: hashedPassword,
   });
 };
 
-// TOKEN SPANS)
-const ACCESS_TOKEN_LIFETIME = 15 * 60 * 1000; // 15 min
-const REFRESH_TOKEN_LIFETIME = 30 * 24 * 60 * 60 * 1000; // 30 days
-
 export const loginUser = async (payload) => {
-  // 1. Is there a user?
   const user = await UsersCollection.findOne({ email: payload.email });
-  if (!user) {
-    throw createHttpError(401, 'User not found');
-  }
+  if (!user) throw createHttpError(401, 'User not found');
 
-  // 2. Is pwd correct? (via bcrypt)
   const isEqual = await bcrypt.compare(payload.password, user.password);
-  if (!isEqual) {
-    throw createHttpError(401, 'Unauthorized');
-  }
+  if (!isEqual) throw createHttpError(401, 'Unauthorized');
 
-  // 3. Clean the old session
   await SessionsCollection.deleteOne({ userId: user._id });
 
-  // 4. Creating new tokens
-  const accessToken = crypto.randomBytes(30).toString('base64');
-  const refreshToken = crypto.randomBytes(30).toString('base64');
+  const sessionData = createSessionData();
 
-  // 5. Save the session to db
   return await SessionsCollection.create({
     userId: user._id,
-    accessToken,
-    refreshToken,
-    accessTokenValidUntil: new Date(Date.now() + ACCESS_TOKEN_LIFETIME),
-    refreshTokenValidUntil: new Date(Date.now() + REFRESH_TOKEN_LIFETIME),
+    ...sessionData,
   });
+};
+
+export const refreshUserSession = async ({ sessionId, refreshToken }) => {
+  const session = await SessionsCollection.findOne({
+    _id: sessionId,
+    refreshToken,
+  });
+
+  if (!session) throw createHttpError(401, 'Session not found');
+
+  if (new Date() > new Date(session.refreshTokenValidUntil)) {
+    throw createHttpError(401, 'Session token expired');
+  }
+
+  await SessionsCollection.deleteOne({ _id: sessionId });
+
+  const newSessionData = createSessionData();
+
+  return await SessionsCollection.create({
+    userId: session.userId,
+    ...newSessionData,
+  });
+};
+
+export const logoutUser = async (sessionId) => {
+  await SessionsCollection.deleteOne({ _id: sessionId });
 };
