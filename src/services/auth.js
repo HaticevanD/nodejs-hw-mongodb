@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 import createHttpError from 'http-errors';
 import { UsersCollection } from '../db/user.js';
 import { SessionsCollection } from '../db/session.js';
-import { FIFTEEN_MINUTES, ONE_DAY } from '../index.js';
+import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../index.js';
 
 // --- HELPER FUNCTION ---
 const createSessionData = () => {
@@ -11,7 +11,7 @@ const createSessionData = () => {
     accessToken: randomBytes(30).toString('base64'),
     refreshToken: randomBytes(30).toString('base64'),
     accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
+    refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),
   };
 };
 

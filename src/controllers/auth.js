@@ -4,17 +4,17 @@ import {
   refreshUserSession,
   logoutUser,
 } from '../services/auth.js';
-import { ONE_DAY } from '../index.js';
+import { THIRTY_DAYS } from '../index.js';
 
 // Common cookies for refresh and login
 const setupSession = (res, session) => {
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
-    expires: new Date(Date.now() + ONE_DAY),
+    expires: new Date(Date.now() + THIRTY_DAYS),
   });
   res.cookie('sessionId', session._id.toString(), {
     httpOnly: true,
-    expires: new Date(Date.now() + ONE_DAY),
+    expires: new Date(Date.now() + THIRTY_DAYS),
   });
 };
 
@@ -24,10 +24,7 @@ export const registerUserController = async (req, res) => {
   res.status(201).json({
     status: 201,
     message: 'Successfully registered a user!',
-    data: {
-      name: user.name,
-      email: user.email,
-    }, // NEVER write pwd here!!!
+    data: user, // NEVER write pwd here!!!
   });
 };
 
@@ -51,7 +48,7 @@ export const refreshUserSessionController = async (req, res) => {
     sessionId: req.cookies.sessionId, // Session ID is in cookies
   });
 
-  setupSessionCookies(res, session); // cookie helper
+  setupSession(res, session); // cookie helper
 
   res.json({
     status: 200,
