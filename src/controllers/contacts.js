@@ -6,6 +6,9 @@ import {
   updateContact,
   deleteContact,
 } from '../services/contacts.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
+import { env } from '../utils/env.js';
 
 export const getContacts = async (req, res) => {
   //req user
@@ -63,9 +66,20 @@ export const getContactById = async (req, res) => {
 };
 
 export const createNewContact = async (req, res) => {
+  const photo = req.file;
+  let photoUrl;
+
+  if (photo) {
+    if (env('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
   const newContact = await createContact({
     ...req.body,
-    userId: req.user._id,
+    photo: photoUrl,
+    userId: req.user._id.toString(),
   });
 
   res.status(201).json({
@@ -79,8 +93,20 @@ export const patchContact = async (req, res) => {
   const { contactId } = req.params;
   const updates = req.body;
   const userId = req.user._id;
+  const photo = req.file;
+  let photoUrl;
 
-  const updated = await updateContact(contactId, userId, updates);
+  if (photo) {
+    if (env('ENABLE_CLOUDINARY') === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
+  const updated = await updateContact(contactId, userId, updates, {
+    ...updates,
+    photo: photoUrl,
+  });
 
   if (!updated) {
     throw createHttpError(404, 'Contact not found');
