@@ -4,7 +4,7 @@ import {
   refreshUserSession,
   logoutUser,
 } from '../services/auth.js';
-import { THIRTY_DAYS } from '../index.js';
+import { THIRTY_DAYS } from '../constants/index.js';
 
 // Common cookies for refresh and login
 const setupSession = (res, session) => {

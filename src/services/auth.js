@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import createHttpError from 'http-errors';
-import { UsersCollection } from '../db/user.js';
-import { SessionsCollection } from '../db/session.js';
-import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../index.js';
+import { UsersCollection } from '../db/models/user.js';
+import { SessionsCollection } from '../db/models/session.js';
+import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../constants/index.js';
 
 // --- HELPER FUNCTION ---
 const createSessionData = () => {
