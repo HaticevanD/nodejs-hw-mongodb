@@ -76,9 +76,10 @@ export const createNewContact = async (req, res) => {
       photoUrl = await saveFileToUploadDir(photo);
     }
   }
+
   const newContact = await createContact({
     ...req.body,
-    photo: photoUrl,
+    ...(photoUrl && { photo: photoUrl }),
     userId: req.user._id.toString(),
   });
 
@@ -103,7 +104,7 @@ export const patchContact = async (req, res) => {
       photoUrl = await saveFileToUploadDir(photo);
     }
   }
-  const updated = await updateContact(contactId, userId, updates, {
+  const updated = await updateContact(contactId, userId, {
     ...updates,
     photo: photoUrl,
   });

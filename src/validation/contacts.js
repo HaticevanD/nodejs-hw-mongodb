@@ -7,6 +7,7 @@ export const createContactSchema = Joi.object({
   email: Joi.string().email(),
   isFavourite: Joi.boolean(),
   contactType: Joi.string().valid('work', 'home', 'personal').required(),
+  photo: Joi.any(),
 });
 
 //Rules while updating existing contact (PATCH)
@@ -16,4 +17,5 @@ export const updateContactSchema = Joi.object({
   email: Joi.string().email(),
   isFavourite: Joi.boolean(),
   contactType: Joi.string().valid('work', 'home', 'personal'), //Non has required as the user can update any independent field
+  photo: Joi.any(),
 });
