@@ -106,7 +106,7 @@ export const patchContact = async (req, res) => {
   }
   const updated = await updateContact(contactId, userId, {
     ...updates,
-    photo: photoUrl,
+    ...(photoUrl && { photo: photoUrl }),
   });
 
   if (!updated) {
