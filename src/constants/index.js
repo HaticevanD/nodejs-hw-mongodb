@@ -1,5 +1,6 @@
 import path from 'node:path';
 
+export const SWAGGER_PATH = path.join(process.cwd(), 'docs', 'swagger.json');
 export const SMTP = {
   SMTP_HOST: 'SMTP_HOST',
   SMTP_PORT: 'SMTP_PORT',
